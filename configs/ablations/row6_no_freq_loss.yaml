@@ -1,0 +1,3 @@
+# Table V row 6: without L_freq.
+_base_: ../echonet_dynamic.yaml
+curriculum: {weights: {freq: 0.0}}

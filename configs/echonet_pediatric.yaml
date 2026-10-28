@@ -1,0 +1,11 @@
+# EchoNet-Pediatric fine-tuning (H = 4 by the Nyquist rule). Point train.init_checkpoint at an
+# adult EchoNet-Dynamic checkpoint; layers whose shapes depend on r are re-initialised.
+_base_: base.yaml
+model: {H: 4}
+data:
+  dataset: echonet_pediatric
+  root: /path/to/EchoNet-Pediatric
+  default_fps: 50.0
+  kwargs: {view: A4C, train_folds: [0, 1, 2, 3, 4, 5, 6, 7], val_folds: [8], test_folds: [9]}
+train:
+  init_checkpoint: /path/to/echonet_dynamic/best.pt

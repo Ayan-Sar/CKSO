@@ -1,0 +1,75 @@
+# CKSO base configuration (EchoNet-Dynamic defaults; Section IV-A and Appendix D).
+# Values marked [impl] are not specified in the manuscript and were chosen here.
+
+model:
+  H: 5                     # harmonics; set by the Nyquist rule H < fs/(2 f_HR) - 1/2
+  P: 4                     # transverse 2-D blocks
+  Q: 3                     # real scalar modes      -> r = 1 + 2H + 2P + Q = 22
+  m: 4                     # delay-embedding window
+  image_size: 112
+  encoder_channels: [32, 64, 96, 128]
+  bottleneck: 32
+  groups: 8                # [impl] GroupNorm groups
+  freq_hidden: 64          # [impl] refinement-head width
+  frequency_mode: locked   # locked | free_subject | free_ratio (ablations)
+  readout_mode: auto       # auto -> analytic (CKSO), general (free freq.), trace (dense / non-normal)
+  n_phase_grid: 64         # [impl] N of the soft-extremum phase grid
+  trace_frames: 64         # trace-readout length for non-analytic ablations
+  operator:
+    kind: ckso             # ckso | dense
+    learn_dc: false
+    normal: true
+    init_a_harm: -4.0      # rho_k ~= 0.982
+    init_a_perp: 0.0       # rho_perp = 0.5
+    init_c_scal: 0.5       # [impl]
+    init_eta: 0.0          # non-normal ablation only
+
+data:
+  dataset: echonet_dynamic
+  root: /path/to/EchoNet-Dynamic
+  image_size: 112
+  clip_frames: 64          # training window (frames)
+  max_eval_frames: 512     # [impl] cap for full-clip inference
+  augment: true            # spatial only (no temporal resampling / dropping)
+  aug: {rot_deg: 10.0, translate: 0.05, scale: [0.9, 1.1]}   # [impl] magnitudes
+  crop_integer_cycles: true
+  default_fps: 50.0
+  volume_stats_default: [100.0, 40.0]   # used only when a dataset has no volumes and no init checkpoint
+  detector: {method: autocorr, center_frac: 0.5, f_min: 0.5, f_max: 3.7, rel_height: 0.8, min_prominence: 0.05}
+  kwargs: {}
+
+loss:
+  gamma: 0.98              # [impl] horizon discount
+  n_anchors: 2             # [impl] prediction anchors per clip
+  ef_scale: 10.0           # [impl] EF residual scale (percentage points)
+  ref_stride: 4            # [impl] stride of reference states for the training readout
+  lin_normalize: false     # [impl] true: L_lin / mean||z||^2 (detached). See IMPLEMENTATION_NOTES section 6
+
+curriculum:
+  weights: {rec: 1.0, lin: 2.0, pred: 1.0, vol: 5.0, ef: 10.0, freq: 0.5, perp: 0.1, pos: 1.0, var: 0.05, trace: 0.0}
+  stages:
+    - {name: A_autoencode, epochs: 15, losses: [rec, var], horizon: 1, beta: 2.0}
+    - {name: B_linearity, epochs: 25, losses: [rec, var, lin, freq, perp, pred], horizon: 2, beta: 2.0}
+    - {name: C_horizon, epochs: 30, losses: [rec, var, lin, freq, perp, pred], horizon: [2, 48], beta: 2.0}
+    - {name: D_clinical, epochs: 30, losses: [rec, var, lin, freq, perp, pred, vol, ef, pos], horizon: 48, beta: [2.0, 40.0]}
+
+optim:
+  lr_net: 3.0e-4
+  lr_operator: 1.0e-3      # the operator scalars; excluded from weight decay
+  weight_decay: 1.0e-2     # [impl]
+
+train:
+  epochs: 100
+  batch_size: 16
+  num_workers: 4
+  seed: 0
+  seeds: [0, 1, 2, 3, 4]
+  grad_clip: 0.0           # 0 = off (the manuscript does not mention clipping)
+  deterministic: false
+  max_steps_per_epoch: null
+  init_checkpoint: null
+
+eval:
+  protocol: all            # all | three | central  (Table III)
+  readout: roots           # roots | grid | soft     (Appendix E readout table)
+  beta: 40.0

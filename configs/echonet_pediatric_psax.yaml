@@ -1,0 +1,3 @@
+_base_: echonet_pediatric.yaml
+data:
+  kwargs: {view: PSAX}

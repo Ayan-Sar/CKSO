@@ -1,0 +1,12 @@
+# Minutes-scale CPU smoke test of the full four-stage curriculum.
+_base_: synthetic.yaml
+data:
+  clip_frames: 40
+  kwargs: {n_train: 8, n_val: 4, n_test: 4, seed: 0, n_frames: 96, fps: 50.0}
+curriculum:
+  stages:
+    - {name: A_autoencode, epochs: 1, losses: [rec, var], horizon: 1, beta: 2.0}
+    - {name: B_linearity, epochs: 1, losses: [rec, var, lin, freq, perp, pred], horizon: 2, beta: 2.0}
+    - {name: C_horizon, epochs: 1, losses: [rec, var, lin, freq, perp, pred], horizon: [2, 8], beta: 2.0}
+    - {name: D_clinical, epochs: 1, losses: [rec, var, lin, freq, perp, pred, vol, ef, pos], horizon: 8, beta: [2.0, 40.0]}
+train: {epochs: 4, batch_size: 4, num_workers: 0}

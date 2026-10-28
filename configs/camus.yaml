@@ -1,0 +1,16 @@
+# CAMUS: public patients, patient-wise 7:1:2 split, A2C + A4C.
+# NOTE: CAMUS sequences are half cycles (ED -> ES); see docs/IMPLEMENTATION_NOTES.md.
+_base_: base.yaml
+model: {H: 5}
+data:
+  dataset: camus
+  root: /path/to/CAMUS/database_nifti
+  clip_frames: 40          # [impl] mirrored half cycles are short
+  default_fps: 25.0
+  kwargs: {views: [2CH, 4CH], split_seed: 0, ratios: [0.7, 0.1, 0.2], mirror_half_cycle: true, default_fps: 25.0}
+curriculum:
+  stages:
+    - {name: A_autoencode, epochs: 15, losses: [rec, var], horizon: 1, beta: 2.0}
+    - {name: B_linearity, epochs: 25, losses: [rec, var, lin, freq, perp, pred], horizon: 2, beta: 2.0}
+    - {name: C_horizon, epochs: 30, losses: [rec, var, lin, freq, perp, pred], horizon: [2, 24], beta: 2.0}
+    - {name: D_clinical, epochs: 30, losses: [rec, var, lin, freq, perp, pred, vol, ef, pos], horizon: 24, beta: [2.0, 40.0]}

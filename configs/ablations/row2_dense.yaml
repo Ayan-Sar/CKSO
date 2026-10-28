@@ -1,0 +1,3 @@
+# Table V row 2: dense unconstrained K (r^2 = 484 parameters), powers by repeated multiplication (BPTT).
+_base_: ../echonet_dynamic.yaml
+model: {operator: {kind: dense}}

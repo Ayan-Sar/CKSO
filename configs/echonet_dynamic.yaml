@@ -1,0 +1,7 @@
+_base_: base.yaml
+data:
+  dataset: echonet_dynamic
+  root: /path/to/EchoNet-Dynamic
+  default_fps: 50.0
+  kwargs:
+    hr_csv: null           # optional CSV (FileName, HR); the public release has no heart-rate column

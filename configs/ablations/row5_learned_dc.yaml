@@ -1,0 +1,3 @@
+# Table V row 5: DC eigenvalue learned (lambda_0 = exp(d)).
+_base_: ../echonet_dynamic.yaml
+model: {operator: {learn_dc: true}}

@@ -1,0 +1,14 @@
+# Synthetic cine loops with exact ground truth (pipeline check; NOT a benchmark).
+_base_: base.yaml
+data:
+  dataset: synthetic
+  clip_frames: 64
+  default_fps: 50.0
+  kwargs: {n_train: 256, n_val: 32, n_test: 64, seed: 0, n_frames: 128, fps: 50.0}
+curriculum:
+  stages:
+    - {name: A_autoencode, epochs: 3, losses: [rec, var], horizon: 1, beta: 2.0}
+    - {name: B_linearity, epochs: 3, losses: [rec, var, lin, freq, perp, pred], horizon: 2, beta: 2.0}
+    - {name: C_horizon, epochs: 4, losses: [rec, var, lin, freq, perp, pred], horizon: [2, 32], beta: 2.0}
+    - {name: D_clinical, epochs: 10, losses: [rec, var, lin, freq, perp, pred, vol, ef, pos], horizon: 32, beta: [2.0, 40.0]}
+train: {epochs: 20, batch_size: 8, num_workers: 0}

@@ -1,0 +1,31 @@
+# HMC-QU, 25 fps, Nyquist-binding regime: H = 3, P = 3, Q = 2 (r = 15). Patient-level 5-fold CV.
+# There are no EF / volume labels, so L_vol and L_ef are absent. The readout can optionally be
+# calibrated against the mask-derived cavity area ('trace' loss with data.readout_from_masks: true).
+_base_: base.yaml
+model: {H: 3, P: 3, Q: 2}
+data:
+  dataset: hmcqu
+  root: /path/to/HMC-QU
+  clip_frames: 48
+  default_fps: 25.0
+  readout_from_masks: false
+  kwargs:
+    fold: 0
+    n_folds: 5
+    split_seed: 0
+    video_dir: A4C
+    label_file: A4C.xlsx
+    id_column: ECHO
+    segment_columns: [SEG1, SEG2, SEG3, SEG4, SEG5, SEG6]
+    mask_dir: null             # folder with per-recording .mat LV-wall masks
+    mask_key: null
+    mask_glob: "Mask_{id}.mat"
+    require_masks: false       # true -> restrict to the per-frame-mask subset
+    fps: 25.0
+curriculum:
+  weights: {trace: 5.0}
+  stages:
+    - {name: A_autoencode, epochs: 15, losses: [rec, var], horizon: 1, beta: 2.0}
+    - {name: B_linearity, epochs: 25, losses: [rec, var, lin, freq, perp, pred], horizon: 2, beta: 2.0}
+    - {name: C_horizon, epochs: 30, losses: [rec, var, lin, freq, perp, pred], horizon: [2, 24], beta: 2.0}
+    - {name: D_clinical, epochs: 30, losses: [rec, var, lin, freq, perp, pred, pos, trace], horizon: 24, beta: [2.0, 40.0]}

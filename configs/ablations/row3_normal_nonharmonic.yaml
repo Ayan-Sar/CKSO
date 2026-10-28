@@ -1,0 +1,3 @@
+# Table V row 3: normal blocks, non-harmonic omega_k = kappa_k * omega_1 with kappa_k free.
+_base_: ../echonet_dynamic.yaml
+model: {frequency_mode: free_ratio}

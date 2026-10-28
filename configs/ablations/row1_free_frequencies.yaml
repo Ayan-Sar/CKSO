@@ -1,0 +1,3 @@
+# Table V row 1: free, subject-conditioned per-block frequencies (Lusch-style auxiliary net).
+_base_: ../echonet_dynamic.yaml
+model: {frequency_mode: free_subject}

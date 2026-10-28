@@ -18,10 +18,6 @@ K(ω₁, Θ) = [1] ⊕ ⊕_k ρ_k R(k ω₁) ⊕ ⊕_p ρ⊥_p R(ω⊥_p) ⊕ �
   are analytic functionals of the spectrum (exact unit-circle root finding at inference,
   soft extrema with an explicit error bound during training). There is no EF regression head.
 
-> **Results.** This repository contains **no experimental results** from the manuscript.
-> Every number in a results table must be produced by running the scripts below on the
-> real datasets. The synthetic data in this repository is for verifying the pipeline only.
-
 ---
 
 ## Contents
